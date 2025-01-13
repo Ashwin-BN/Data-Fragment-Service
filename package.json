@@ -11,5 +11,8 @@
     "url": "git+https://github.com/Ashwin-BN/fragments.git"
   },
   "author": "Ashwin B N",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "prettier": "~3.4.2"
+  }
 }
