@@ -9,8 +9,8 @@ const logger = require('./logger');
 // Get our express app instance
 const app = require('./app');
 
-// Get the desired port from the process' environment. Default to `8080`
-const port = parseInt(process.env.PORT || '8080', 10);
+// Read PORT from environment or default to 8080
+const port = parseInt(process.env.PORT || 8080, 10);
 
 // Start a server listening on this port
 const server = stoppable(
