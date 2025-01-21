@@ -4,17 +4,7 @@
  * Get a list of fragments for the current user
  */
 module.exports = (req, res) => {
-  const token = req.headers.authorization;
-
-  // If there's no token, return 401 Unauthorized
-  if (!token) {
-      res.status(401).json({
-          status: 'Unauthorized',
-          message: 'No token provided'
-      });
-      return;
-  }
-  
+    // TODO: this is just a placeholder. To get something working, return an empty array...
     res.status(200).json({
       status: 'ok',
       // TODO: change me
