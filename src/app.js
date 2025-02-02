@@ -1,11 +1,11 @@
 // src/app.js
 
-const passport = require('passport');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 
+const passport = require('passport');
 const authenticate = require('./auth');
 
 const logger = require('./logger');
@@ -31,20 +31,12 @@ app.use(cors());
 // Use gzip/deflate compression middleware
 app.use(compression());
 
-// Use gzip/deflate compression middleware
-app.use(compression());
-
 // Set up our passport authentication middleware
 passport.use(authenticate.strategy());
 app.use(passport.initialize());
 
 // Define our routes
 app.use('/', require('./routes'));
-
-// Log environment variables if debug mode is on
-if (logger.debug) {
-  logger.debug({ processEnvironmentVariables: process.env }, 'Process Environment Variables');
-}
 
 // Add 404 middleware to handle any requests for resources that can't be found
 app.use((req, res) => {
