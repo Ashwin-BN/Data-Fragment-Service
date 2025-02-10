@@ -14,7 +14,7 @@ const {
   writeFragmentData,
   listFragments,
   deleteFragment,
-} = require('./data');
+} = require('./data/memory');
 
 class Fragment {
   static validTypes = [`text/plain`];
