@@ -19,4 +19,11 @@ describe('GET /v1/fragments', () => {
     expect(res.body.status).toBe('ok');
     expect(Array.isArray(res.body.fragments)).toBe(true);
   });
+  // Test for empty fragments list
+  test('authenticated users get an empty array when no fragments exist', async () => {
+    const res = await request(app).get('/v1/fragments').auth('user2@email.com', 'password2');
+    expect(res.statusCode).toBe(200);
+    expect(res.body.status).toBe('ok');
+    expect(res.body.fragments).toEqual([]);
+  });
 });
