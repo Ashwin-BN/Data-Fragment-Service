@@ -49,6 +49,9 @@ RUN npm install
 # Copy src to /app/src/
 COPY ./src ./src
 
+# Copy our HTPASSWD file
+COPY ./tests/.htpasswd ./tests/.htpasswd
+
 # Start the container by running our server
 # https://docs.docker.com/reference/dockerfile/#cmd
 CMD ["npm", "start"]

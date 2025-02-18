@@ -9,3 +9,4 @@ eslint.config.mjs
 .gitignore
 .prettier*
 jest*
+!tests/.htpasswd
