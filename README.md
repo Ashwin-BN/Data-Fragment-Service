@@ -1,159 +1,185 @@
-# Fragments Back-End API
+# Fragments Microservice
+
+## Overview
+
+The **Fragments Microservice** is designed for a fictional Canadian manufacturing company to manage and work with small fragments of text or images. These fragments are smaller than traditional documents and come in a variety of formats (text, images, etc.). This microservice is built to be scalable, providing CRUD operations on fragments and enabling format conversions. The service integrates with AWS and other internal systems for efficient handling of data and ensures robust authentication and authorization.
+
+---
+
+## Key Features
+
+- **HTTP REST API**: Exposes endpoints to interact with the fragments (text and image data).
+- **Fragment CRUD Operations**: Enables the creation, retrieval, updating, and deletion of fragments.
+- **Format Conversion**: Allows conversion of fragments between different formats, such as converting Markdown to HTML or JPEG to PNG, without increasing storage costs.
+- **Authorization**: Ensures proper authorization for all operations, isolating data between different users.
+- **Scalability**: Designed to scale massively to handle large amounts of data.
+- **Deployment**: Deployed to AWS, with automatic build, testing, and deployment using GitHub.
+
+---
 
 ## Table of Contents
 
-- [Project Setup](#project-setup)
-- [Scripts](#scripts)
-  - [Start](#start)
-  - [Dev](#dev)
-  - [Debug](#debug)
-  - [Lint](#lint)
-- [Running the Server](#running-the-server)
-- [Debugging](#debugging)
-- [Notes](#notes)
+- [Installation](#installation)
+- [Environment Variables](#environment-variables)
+- [Running the API Locally](#running-the-api-locally)
+- [API Documentation](#api-documentation)
+- [Health Check](#health-check)
+- [Fragments API](#fragments-api)
+- [Contributing](#contributing)
+- [License](#license)
 
-## Project Setup
+---
 
-### 1. Software Installation
+## Installation
 
-Ensure the following software is installed before setting up the project:
+To get started with the project, follow the steps below.
 
-- **[Node.js](https://nodejs.org/en/)**: LTS (Long Term Support) version is recommended. Node.js is the runtime for the backend server.
-- **[Visual Studio Code](https://code.visualstudio.com/)**: Recommended IDE for development.
-  - Install the following extensions:
-    - **ESLint**: For linting JavaScript.
-    - **Prettier**: For auto-formatting code.
-    - **Code Spell Checker**: Helps catch spelling mistakes.
-- **[Git](https://git-scm.com/)**: For version control.
-- **[Curl](https://curl.haxx.se/)**: Used for making HTTP requests (required on some platforms like Windows PowerShell).
-
-### 2. Clone the Repository
-
-Clone the repository to your local machine:
+### Clone the Repository
 
 ```bash
-git clone https://github.com/Ashwin-BN/fragments.git
-cd fragments
+git clone <repository-url>
+cd <repository-folder>
 ```
 
-### 3. Install Dependencies
+### Install Dependencies
 
-Install the required Node.js dependencies:
+Run the following command to install all required dependencies:
 
 ```bash
 npm install
 ```
 
-### 4. Environment Variables
+---
 
-Ensure you have the necessary environment variables configured. For example, in a `.env` file:
+## Environment Variables
 
-```bash
-LOG_LEVEL=debug
-```
+Before running the application, ensure you configure the following environment variables using the `.env` file:
 
-Make sure to replace or add any other environment variables specific to your project.
+- **`NODE_ENV`**: Specifies the environment mode. In development, logging is set to debug mode. In production, standard logs are used.
+  - Example: `development`, `production`
 
-## Scripts
+- **`AWS_COGNITO_POOL_ID`**: The Amazon Cognito User Pool ID for user authentication. Required if `USE_AWS_AUTH` is set to true.
+  - Example: `us-east-1_C0rmjoZwe`
 
-### Start
+- **`AWS_COGNITO_CLIENT_ID`**: The Amazon Cognito Client ID for the application. Required if `USE_AWS_AUTH` is set to true.
+  - Example: `7lksepmgjsq3aspmf7uqa3hucu`
 
-Run the server in production mode without live-reloading or debugging:
+- **`HTPASSWD_FILE`**: The path to the file containing acceptable usernames and passwords for the application. Required if `USE_AWS_AUTH` is set to false.
+  - Example: `tests/.htpasswd`
 
-```bash
-npm start
-```
+- **`PORT`**: Specifies the port on which the microservice runs.
+  - Example: `8080`
 
-This will execute:
+---
 
-```bash
-node src/server.js
-```
+## Running the API Locally
 
-By default, the server will be accessible at:
+Follow the steps below to run the API on your local environment.
 
-```
-http://localhost:8080
-```
+### Checking for Errors
 
-### Dev
-
-Run the server in **development mode** using `nodemon`, which automatically restarts the server when files are changed:
-
-```bash
-npm run dev
-```
-
-This will execute:
-
-```bash
-nodemon src/server.js --watch src
-```
-
-### Debug
-
-Start the server with debugging enabled using the **Node.js Inspector** on port `9229`:
-
-```bash
-npm run debug
-```
-
-This will execute:
-
-```bash
-nodemon --inspect=0.0.0.0:9229 src/server.js --watch src
-```
-
-You can connect a debugger (e.g., in **VSCode** or **Chrome DevTools**) to this port for debugging.
-
-### Lint
-
-Run **ESLint** to check for code issues and maintain code quality:
+To check for errors in the code using ESLint, run the following command:
 
 ```bash
 npm run lint
 ```
 
-This will execute:
+### Debug Mode
+
+To run the code in debug mode or to integrate with the VSCode debugger, use the following command:
 
 ```bash
-eslint ./src/**/*.js
+npm debug
 ```
 
-To automatically fix linting issues (if possible):
+### Running the Development Server
+
+To run the Express server in Development mode with hot-reloading (nodemon), use the following command:
 
 ```bash
-npm run lint -- --fix
+npm run dev
 ```
 
-## Running the Server
+This starts the server using `nodemon`, which automatically restarts the server when changes are detected in the source code.
 
-- **For Production**: Run `npm start` to start the server in production mode.
-- **For Development**: Run `npm run dev` to start the server with live-reloading for easier development.
-- **For Debugging**: Use `npm run debug` to start the server with debugging enabled, allowing you to inspect and step through the code.
+### Starting the Server
 
-## Debugging
+To start the server for production-like environments, use:
 
-### Using VSCode
+```bash
+npm start
+```
 
-1. Open **Run and Debug** in VSCode (`Ctrl + Shift + D`).
-2. Select **Debug via npm run debug**.
-3. Press **F5** or click **Start Debugging** to begin.
+---
 
-Ensure you have the necessary `launch.json` configuration in the `.vscode` folder.
+## API Documentation
 
-## Notes
+The **Fragments Microservice** exposes the following API endpoints:
 
-- **Ports**:
+### 1. Health Check
 
-  - The server runs by default on **port 8080**.
-  - The Node.js Inspector listens on **port 9229** during debugging.
+Check the health of the service by accessing the root route (`/`). This route does not require authentication.
 
-- **Environment Variables**:
+#### Example Response:
 
-  - Make sure any necessary environment variables (like `LOG_LEVEL`) are set before running the server or starting debugging.
+```json
+{
+  "status": "ok",
+  "author": "David Humphrey <david.humphrey@senecapolytechnic.ca>",
+  "githubUrl": "https://github.com/humphd/fragments",
+  "version": "0.5.3"
+}
+```
 
-- **Error Handling**: Ensure your environment and error handling is configured correctly for smooth operation.
+#### Example Usage (using curl):
 
-- **Using curl**:
-  We use _curl.exe_ in Windows because Windows requires executables to have the .exe extension, ensuring proper recognition and avoiding conflicts with other files. In UNIX-based systems, no such extension is needed.
+```bash
+curl -i https://fragments-api.com/
+```
+
+### 2. Fragments
+
+Fragments represent pieces of data (text or images). Each fragment has two parts: metadata and data (binary content).
+
+#### Fragment Metadata:
+
+- **id**: Unique identifier (UUID) for the fragment.
+- **ownerId**: Hashed email address of the fragment owner.
+- **created**: Timestamp of when the fragment was created (ISO 8601 format).
+- **updated**: Timestamp of when the fragment was last updated.
+- **type**: The MIME type of the fragment (e.g., `text/plain`, `image/png`).
+- **size**: Size of the fragment data in bytes.
+
+#### 3. POST /fragments
+
+Creates a new fragment by posting raw binary data (text or image). The request body should contain the fragment data, and the `Content-Type` header should be set accordingly.
+
+##### Example Request:
+
+```bash
+curl -i \
+  -X POST \
+  -u user1@email.com:password1 \
+  -H "Content-Type: text/plain" \
+  -d "This is a fragment" \
+  https://fragments-api.com/v1/fragments
+```
+
+##### Example Response:
+
+```json
+{
+  "status": "ok",
+  "fragment": {
+    "id": "30a84843-0cd4-4975-95ba-b96112aea189",
+    "ownerId": "11d4c22e42c8f61feaba154683dea407b101cfd90987dda9e342843263ca420a",
+    "created": "2021-11-02T15:09:50.403Z",
+    "updated": "2021-11-02T15:09:50.403Z",
+    "type": "text/plain",
+    "size": 256
+  }
+}
+```
+
+---
+[Ashwin BN](https://github.com/Ashwin-BN/)
