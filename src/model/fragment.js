@@ -114,7 +114,7 @@ class Fragment {
       return Promise.reject(new Error('Invalid Data. Did not receive valid data'));
     }
     this.size = data.length;
-    this.save();
+    await this.save(); // Ensure metadata is updated before writing data
     return writeFragmentData(this.ownerId, this.id, data);
   }
 

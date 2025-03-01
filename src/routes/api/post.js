@@ -8,7 +8,7 @@ const logger = require('../../logger');
 
 const { Fragment } = require('../../model/fragment');
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   if (!Buffer.isBuffer(req.body)) {
     logger.error({ req }, 'invalid content-type');
     res.status(415).json(createErrorResponse(415, 'invalid content-type of request'));
@@ -20,32 +20,40 @@ module.exports = (req, res) => {
   logger.debug({ user }, 'requested user');
   logger.debug({ contentType }, 'Content Type');
 
-  const fragMetaData = { ownerId: user, type: contentType };
-  const fragment = new Fragment(fragMetaData);
+  try {
+    const fragMetaData = { ownerId: user, type: contentType };
+    const fragment = new Fragment(fragMetaData);
 
-  fragment.save();
-  fragment.setData(req.body);
+    await fragment.save();
+    await fragment.setData(req.body);
 
-  const protocol = req.protocol;
-  const host = req.get('host');
+    const protocol = req.protocol;
+    const host = req.get('host');
 
-  logger.debug({ protocol }, 'host protocol');
-  logger.debug({ host }, 'host url');
+    logger.debug({ protocol }, 'host protocol');
+    logger.debug({ host }, 'host url');
 
-  let locationURL = url.format({
-    protocol: req.protocol,
-    host: req.headers.host,
-    pathname: `/v1/fragments/${fragment.id}`,
-  });
+    let locationURL = url.format({
+      protocol: req.protocol,
+      host: req.headers.host,
+      pathname: `/v1/fragments/${fragment.id}`,
+    });
 
-  if (process.env.API_URL) {
-    const urlString = new URL(process.env.API_URL);
-    urlString.pathname = `/v1/fragments/${fragment.id}`;
-    locationURL = urlString.toString();
+    if (process.env.API_URL) {
+      const urlString = new URL(process.env.API_URL);
+      urlString.pathname = `/v1/fragments/${fragment.id}`;
+      locationURL = urlString.toString();
+    }
+
+    logger.debug({ locationURL }, 'location url');
+
+    res.setHeader('Location', locationURL);
+    res.status(201).json(createSuccessResponse({ fragment }));
+  } catch (err) {
+    logger.error({ err }, 'Error creating fragment');
+    // Ensure response is only sent if it hasn't already been sent
+    if (!res.headersSent) {
+      res.status(500).json(createErrorResponse(500, 'Internal Server Error'));
+    }
   }
-
-  logger.debug({ locationURL }, 'location url');
-
-  res.setHeader('Location', locationURL);
-  res.status(201).json(createSuccessResponse({ fragment }));
 };
