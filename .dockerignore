@@ -10,3 +10,6 @@ eslint.config.mjs
 .prettier*
 jest*
 !tests/.htpasswd
+.env*
+.github/
+README.md
