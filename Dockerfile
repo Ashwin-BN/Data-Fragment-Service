@@ -30,7 +30,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --only=production
 
 # ----------------- Stage 2: Create a lightweight production image ----------------- 
-FROM node:22.12.0--alpine3.19 AS production
+FROM node:22.12.0-alpine3.19 AS production
 
 # adds key=value pairs with arbitrary metadata about your image
 # indicating who is maintaining this image, and what this image is for
