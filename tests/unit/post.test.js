@@ -1,81 +1,271 @@
 // tests/unit/post.test.js
 
+const fs = require('fs');
+const path = require('path');
 const request = require('supertest');
-
 const app = require('../../src/app');
 
+// Test suite for the /v1/fragments endpoint
+// Ensures proper fragment creation, authentication handling, and validation
 describe('POST /v1/fragments', () => {
-  // If the request is missing the Authorization header, it should be forbidden
-  test('unauthenticated requests are denied', async () => {
-    const payload = 'This is a Fragment';
-    await request(app)
-      .post('/v1/fragments')
-      .send(payload)
-      .set('Content-Type', 'text/plain')
-      .expect(401);
-  });
+  /**
+   * Authentication Tests
+   */
+  test('Unauthenticated requests are denied', () => request(app).post('/v1/fragments').expect(401));
 
-  // If the wrong username/password pair are used (no such user), it should be forbidden
-  test('incorrect credentials are denied', async () => {
-    const payload = 'This is a Fragment';
-    await request(app)
-      .post('/v1/fragments')
-      .auth('invalid@email.com', 'incorrect_password')
-      .send(payload)
-      .set('Content-Type', 'text/plain')
-      .expect(401);
-  });
+  test('Incorrect credentials are denied', () =>
+    request(app).post('/v1/fragments').auth('invalid@email.com', 'incorrect_password').expect(401));
 
-  test('authenticated users get a created fragment', async () => {
-    const payload = 'This is a Fragment';
+  /**
+   * Fragment Creation Tests
+   */
+  test('Authenticated users can create text/plane fragment successfully', async () => {
+    const filePath = path.join(__dirname, '..', 'files', 'file.txt');
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+
     const res = await request(app)
       .post('/v1/fragments')
       .auth('user1@email.com', 'password1')
-      .send(payload)
-      .set('Content-Type', 'text/plain');
-    expect(res.statusCode).toBe(201);
+      .set('Content-Type', 'text/plain')
+      .send(fileContent);
+
+    expect(res.status).toBe(201);
     expect(res.body.status).toBe('ok');
-    expect(res.body.fragment).not.toBeUndefined();
+
+    const fragment = res.body.fragment;
+    expect(fragment).toBeDefined();
+
+    expect(fragment).toEqual({
+      id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
+      ownerId: expect.stringMatching(/^[0-9a-f]{64}$/),
+      type: 'text/plain',
+      size: 34,
+      created: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
+      updated: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
+    });
   });
 
-  test('trying to create a fragment of unsupported type', async () => {
-    const payload = `
-      <?xml version="1.0" encoding="UTF-8"?>
-        <fragment>
-          This is a fragment
-      </fragment>`;
-    await request(app)
-      .post('/v1/fragments')
-      .auth('user1@email.com', 'password1')
-      .send(payload)
-      .set('Content-Type', 'application/xml')
-      .expect(415);
-  });
+  test('Authenticated users can create text/plane; charset=utf-8 fragment successfully', async () => {
+    const filePath = path.join(__dirname, '..', 'files', 'file.txt');
+    const fileContent = fs.readFileSync(filePath, 'utf8');
 
-  test('recieve a valid fragment', async () => {
-    const payload = 'This is a Fragment';
     const res = await request(app)
       .post('/v1/fragments')
       .auth('user1@email.com', 'password1')
-      .send(payload)
-      .set('Content-Type', 'text/plain');
-    expect(res.body.fragment?.id).toMatch(
-      /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/
-    );
-    expect(res.body.fragment?.ownerId).toMatch(/^[a-f0-9]{64}$/i);
-    expect(res.body.fragment?.type).toBe('text/plain');
-    expect(Date.parse(res.body.fragment?.created)).not.toBeNaN();
-    expect(Date.parse(res.body.fragment?.updated)).not.toBeNaN();
-    expect(res.body.fragment?.size).toBe(payload.length);
+      .set('Content-Type', 'text/plain; charset=utf-8')
+      .send(fileContent);
+
+    expect(res.status).toBe(201);
+    expect(res.body.status).toBe('ok');
+
+    const fragment = res.body.fragment;
+    expect(fragment).toBeDefined();
+
+    expect(fragment).toEqual({
+      id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
+      ownerId: expect.stringMatching(/^[0-9a-f]{64}$/),
+      type: 'text/plain; charset=utf-8',
+      size: 34,
+      created: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
+      updated: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
+    });
   });
 
-  test('location header is set', async () => {
-    const payload = 'This is a Fragment';
+  test('Authenticated users can create HTML fragment successfully', async () => {
+    const filePath = path.join(__dirname, '..', 'files', 'file.html');
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+
     const res = await request(app)
       .post('/v1/fragments')
       .auth('user1@email.com', 'password1')
-      .send(payload)
+      .set('Content-Type', 'text/html')
+      .send(fileContent);
+
+    expect(res.status).toBe(201);
+    expect(res.body.status).toBe('ok');
+
+    const fragment = res.body.fragment;
+    expect(fragment).toBeDefined();
+
+    expect(fragment).toEqual({
+      id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
+      ownerId: expect.stringMatching(/^[0-9a-f]{64}$/),
+      type: 'text/html',
+      size: 44,
+      created: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
+      updated: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
+    });
+  });
+
+  test('Authenticated users can create markdown fragment successfully', async () => {
+    const filePath = path.join(__dirname, '..', 'files', 'file.md');
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'text/markdown')
+      .send(fileContent);
+
+    expect(res.status).toBe(201);
+    expect(res.body.status).toBe('ok');
+
+    const fragment = res.body.fragment;
+    expect(fragment).toBeDefined();
+
+    expect(fragment).toEqual({
+      id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
+      ownerId: expect.stringMatching(/^[0-9a-f]{64}$/),
+      type: 'text/markdown',
+      size: 40,
+      created: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
+      updated: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
+    });
+  });
+
+  test('Authenticated users can create CSV fragment successfully', async () => {
+    const filePath = path.join(__dirname, '..', 'files', 'file.csv');
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'text/csv')
+      .send(fileContent);
+
+    expect(res.status).toBe(201);
+    expect(res.body.status).toBe('ok');
+
+    const fragment = res.body.fragment;
+    expect(fragment).toBeDefined();
+
+    expect(fragment).toEqual({
+      id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
+      ownerId: expect.stringMatching(/^[0-9a-f]{64}$/),
+      type: 'text/csv',
+      size: 71,
+      created: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
+      updated: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
+    });
+  });
+
+  test('Authenticated users can create JSON fragment successfully', async () => {
+    const filePath = path.join(__dirname, '..', 'files', 'file.json');
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'application/json')
+      .send(fileContent);
+
+    expect(res.status).toBe(201);
+    expect(res.body.status).toBe('ok');
+
+    const fragment = res.body.fragment;
+    expect(fragment).toBeDefined();
+
+    expect(fragment).toEqual({
+      id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
+      ownerId: expect.stringMatching(/^[0-9a-f]{64}$/),
+      type: 'application/json',
+      size: 59,
+      created: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
+      updated: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
+    });
+  });
+
+  /**
+   * Fragment Creation Tests
+   */
+  test('Should throw 400 error when request body is empty', async () => {
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'text/plain')
+      .send('');
+
+    expect(res.status).toBe(400);
+
+    expect(res.body).toEqual({
+      status: 'error',
+      error: {
+        code: 400,
+        message: 'Fragment cannot be null',
+      },
+    });
+  });
+
+  test('Should throw 400 error when request does not have a body', async () => {
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
       .set('Content-Type', 'text/plain');
-    expect(res.headers.location).not.toBeUndefined();
+
+    expect(res.status).toBe(400);
+
+    expect(res.body).toEqual({
+      status: 'error',
+      error: {
+        code: 400,
+        message: 'Fragment cannot be null',
+      },
+    });
+  });
+
+  test('Should throw 415 error when Content-Type header is not provided in the request', async () => {
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .send('Hello World');
+
+    expect(res.status).toBe(415);
+
+    expect(res.body).toEqual({
+      status: 'error',
+      error: {
+        code: 415,
+        message: 'invalid content-type of request',
+      },
+    });
+  });
+
+  test('Should throw 415 error when the Content-Type header is set as JSON but a text file is passed instead', async () => {
+    const filePath = path.join(__dirname, '..', 'files', 'file.txt');
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'application/json')
+      .send(fileContent);
+
+    expect(res.status).toBe(415);
+
+    expect(res.body).toEqual({
+      status: 'error',
+      error: {
+        code: 415,
+        message: expect.stringContaining('Unsupported Content-Type. Invalid JSON data'),
+      },
+    });
+  });
+
+  test('Should get 500 status code from the server if an invalid Content-Type is passed', async () => {
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'numbers')
+      .send('This is a fragment');
+
+    expect(res.status).toBe(500);
+
+    expect(res.body).toEqual({
+      status: 'error',
+      error: {
+        code: 500,
+        message: 'invalid media type',
+      },
+    });
   });
 });
