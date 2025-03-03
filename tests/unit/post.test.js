@@ -1,9 +1,29 @@
 // tests/unit/post.test.js
 
-const fs = require('fs');
-const path = require('path');
 const request = require('supertest');
 const app = require('../../src/app');
+const fs = require('fs');
+const path = require('path');
+
+const filesDir = path.join(__dirname, '../files'); // Path to test files
+
+/**
+ * Helper function to create a fragment from a file
+ * @param {string} fileName - The name of the file to be uploaded
+ * @param {string} authEmail - The email for authentication
+ * @param {string} authPassword - The password for authentication
+ * @param {string} contentType - The content type of the file
+ * @returns {Promise<Object>} - The fragment created from the file
+ */
+const createFragmentFromFile = async (fileName, contentType) => {
+  const filePath = path.join(filesDir, fileName);
+  const fileData = fs.readFileSync(filePath, 'utf8');
+  return request(app)
+    .post('/v1/fragments')
+    .auth('user1@email.com', 'password1')
+    .send(fileData)
+    .set('Content-Type', contentType);
+};
 
 // Test suite for the /v1/fragments endpoint
 // Ensures proper fragment creation, authentication handling, and validation
@@ -27,14 +47,7 @@ describe('POST /v1/fragments', () => {
    */
   describe('Authenticated User can Create Fragments ', () => {
     test('Authenticated users can create text/plane fragment successfully', async () => {
-      const filePath = path.join(__dirname, '..', 'files', 'file.txt');
-      const fileContent = fs.readFileSync(filePath, 'utf8');
-
-      const res = await request(app)
-        .post('/v1/fragments')
-        .auth('user1@email.com', 'password1')
-        .set('Content-Type', 'text/plain')
-        .send(fileContent);
+      const res = await createFragmentFromFile('file.txt', 'text/plain');
 
       expect(res.status).toBe(201);
       expect(res.body.status).toBe('ok');
@@ -53,15 +66,7 @@ describe('POST /v1/fragments', () => {
     });
 
     test('Authenticated users can create text/plane; charset=utf-8 fragment successfully', async () => {
-      const filePath = path.join(__dirname, '..', 'files', 'file.txt');
-      const fileContent = fs.readFileSync(filePath, 'utf8');
-
-      const res = await request(app)
-        .post('/v1/fragments')
-        .auth('user1@email.com', 'password1')
-        .set('Content-Type', 'text/plain; charset=utf-8')
-        .send(fileContent);
-
+      const res = await createFragmentFromFile('file.txt', 'text/plain; charset=utf-8');
       expect(res.status).toBe(201);
       expect(res.body.status).toBe('ok');
 
@@ -79,15 +84,7 @@ describe('POST /v1/fragments', () => {
     });
 
     test('Authenticated users can create HTML fragment successfully', async () => {
-      const filePath = path.join(__dirname, '..', 'files', 'file.html');
-      const fileContent = fs.readFileSync(filePath, 'utf8');
-
-      const res = await request(app)
-        .post('/v1/fragments')
-        .auth('user1@email.com', 'password1')
-        .set('Content-Type', 'text/html')
-        .send(fileContent);
-
+      const res = await createFragmentFromFile('file.html', 'text/html');
       expect(res.status).toBe(201);
       expect(res.body.status).toBe('ok');
 
@@ -105,15 +102,7 @@ describe('POST /v1/fragments', () => {
     });
 
     test('Authenticated users can create markdown fragment successfully', async () => {
-      const filePath = path.join(__dirname, '..', 'files', 'file.md');
-      const fileContent = fs.readFileSync(filePath, 'utf8');
-
-      const res = await request(app)
-        .post('/v1/fragments')
-        .auth('user1@email.com', 'password1')
-        .set('Content-Type', 'text/markdown')
-        .send(fileContent);
-
+      const res = await createFragmentFromFile('file.md', 'text/markdown');
       expect(res.status).toBe(201);
       expect(res.body.status).toBe('ok');
 
@@ -131,14 +120,7 @@ describe('POST /v1/fragments', () => {
     });
 
     test('Authenticated users can create CSV fragment successfully', async () => {
-      const filePath = path.join(__dirname, '..', 'files', 'file.csv');
-      const fileContent = fs.readFileSync(filePath, 'utf8');
-
-      const res = await request(app)
-        .post('/v1/fragments')
-        .auth('user1@email.com', 'password1')
-        .set('Content-Type', 'text/csv')
-        .send(fileContent);
+      const res = await createFragmentFromFile('file.csv', 'text/csv');
 
       expect(res.status).toBe(201);
       expect(res.body.status).toBe('ok');
@@ -157,14 +139,7 @@ describe('POST /v1/fragments', () => {
     });
 
     test('Authenticated users can create JSON fragment successfully', async () => {
-      const filePath = path.join(__dirname, '..', 'files', 'file.json');
-      const fileContent = fs.readFileSync(filePath, 'utf8');
-
-      const res = await request(app)
-        .post('/v1/fragments')
-        .auth('user1@email.com', 'password1')
-        .set('Content-Type', 'application/json')
-        .send(fileContent);
+      const res = await createFragmentFromFile('file.json', 'application/json');
 
       expect(res.status).toBe(201);
       expect(res.body.status).toBe('ok');
@@ -240,14 +215,7 @@ describe('POST /v1/fragments', () => {
     });
 
     test('Should throw 415 error when the Content-Type header is set as JSON but a text file is passed instead', async () => {
-      const filePath = path.join(__dirname, '..', 'files', 'file.txt');
-      const fileContent = fs.readFileSync(filePath, 'utf8');
-
-      const res = await request(app)
-        .post('/v1/fragments')
-        .auth('user1@email.com', 'password1')
-        .set('Content-Type', 'application/json')
-        .send(fileContent);
+      const res = await createFragmentFromFile('file.txt', 'application/json');
 
       expect(res.status).toBe(415);
 
