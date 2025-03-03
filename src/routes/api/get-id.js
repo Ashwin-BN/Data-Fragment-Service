@@ -1,9 +1,10 @@
 // src/routes/api/get-id.js
 
-const path = require('path');
-const { createErrorResponse } = require('../../response');
+const { createErrorResponse, createSuccessResponse } = require('../../response');
 const { Fragment } = require('../../model/fragment');
 const logger = require('../../logger');
+const { typeConversion } = require('../../utils/typeConversion');
+const contentTypeMapper = require('../../utils/typeMapper');
 
 /**
  * Get a fragment by its ID
@@ -11,46 +12,93 @@ const logger = require('../../logger');
  * @param {Object} res - Express response object
  * @throws {Error} If fragment retrieval fails
  */
-module.exports = async (req, res) => {
+module.exports.getFragmentById = async (req, res) => {
+  const [fragmentId, extension] = req.params.id.split('.');
+  logger.info('Request to get fragment by ID for user');
+
   try {
-    const pathVal = path.parse(req.params.id);
-    const id = pathVal.name;
+    // Retrieve the requested fragment from the database
+    const requestedFragmentFormat = await Fragment.byId(req.user, fragmentId);
+    const fragment = new Fragment(requestedFragmentFormat);
+    const fragmentData = await fragment.getData();
 
-    // Log request details
-    logger.info(
-      {
-        fragmentId: id,
-        userId: req.user,
-        requestedFormat: pathVal.ext,
-      },
-      'Attempting to retrieve fragment'
-    );
+    // Check if the extension exists
+    const finalType = contentTypeMapper.getContentType(`.${extension}`);
 
-    // Retrieve fragment
-    const fragment = await Fragment.byId(req.user, id);
-
-    // Handle format conversion
-    if (pathVal.ext && pathVal.ext !== '.txt') {
-      return res
-        .status(415)
-        .json(createErrorResponse(415, 'Conversion to following format is not permitted'));
+    // If no extension is provided or if the extension is the same as the fragment's MIME type, return the original fragment
+    if (!extension || finalType === fragment.mimeType) {
+      logger.info('Returning data in original format');
+      res.setHeader('Content-Type', fragment.mimeType);
+      return res.status(200).send(fragmentData);
     }
 
-    // Log successful retrieval
-    logger.debug(
-      {
-        fragmentId: id,
-        userId: req.user,
-      },
-      'Successfully retrieved fragment'
-    );
+    // Convert the data if the type conversion is possible
+    if (fragment.formats.includes(finalType)) {
+      logger.info('Type conversion possible. Converting the data.');
+      const data = await typeConversion({
+        currentType: fragment.mimeType,
+        finalType: finalType,
+        fragmentData: fragmentData,
+      });
+      res.setHeader('Content-Type', finalType);
+      return res.status(200).send(data);
+    }
 
-    // Return original format
-    const data = await fragment.getData();
-    res.setHeader('Content-Type', 'text/plain');
-    res.status(200).send(data);
-  } catch (err) {
-    logger.error({ err }, 'Error retrieving fragment');
-    res.status(404).json(createErrorResponse(404, `Fragment not found`));
+    // If type conversion is not possible, return an error
+    logger.error('Type conversion not possible', {
+      mimeType: fragment.mimeType,
+      formats: fragment.formats,
+    });
+    return res
+      .status(415)
+      .send(
+        createErrorResponse(
+          415,
+          `Type conversion not possible. ${fragment.mimeType} can only be converted into ${fragment.formats}.`
+        )
+      );
+  } catch (error) {
+    // If the requested fragment doesn't exist
+    if (error.message === 'Fragment does not exist') {
+      logger.error('Fragment does not exist', { userId: req.user.id, fragmentId });
+      return res
+        .status(404)
+        .send(createErrorResponse(404, "The requested fragment doesn't exist."));
+    }
+    logger.error('Error fetching fragment by ID for user:', error.message);
+    res.status(500).send(createErrorResponse(500, error.message));
+  }
+};
+
+/**
+ * Get a fragment's metadata by its ID
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+module.exports.getFragmentMetadataById = async (req, res) => {
+  const fragmentId = req.params.id;
+  logger.info('Request to get fragment metadata by ID for user');
+
+  try {
+    // Fetch fragment metadata by ID
+    const fragmentMetadata = await Fragment.byId(req.user, fragmentId);
+    res.status(200).send(
+      createSuccessResponse({
+        fragment: fragmentMetadata,
+      })
+    );
+  } catch (error) {
+    // If the requested fragment doesn't exist
+    if (error.message === 'Fragment does not exist') {
+      logger.error('Fragment does not exist', { userId: req.user.id, fragmentId });
+      return res
+        .status(404)
+        .send(createErrorResponse(404, "The requested fragment doesn't exist."));
+    }
+    logger.error(
+      { err: error },
+      'An error occurred while fetching a fragment metadata by ID for a user'
+    );
+    res.status(500).send(createErrorResponse(500, error.message));
   }
 };

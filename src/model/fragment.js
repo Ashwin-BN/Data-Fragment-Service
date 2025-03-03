@@ -79,7 +79,7 @@ class Fragment {
       return Promise.resolve(newFragment);
     } catch (err) {
       logger.error({ err }, 'error occurred in getting new instance of fragment');
-      return Promise.reject(new Error('the specified fragment does not exist'));
+      return Promise.reject(new Error('Fragment does not exist'));
     }
   }
 
