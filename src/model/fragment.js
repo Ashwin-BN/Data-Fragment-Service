@@ -1,3 +1,5 @@
+// src/model/fragments.js
+
 // Use crypto.randomUUID() to create unique IDs, see:
 // https://nodejs.org/api/crypto.html#cryptorandomuuidoptions
 const { randomUUID } = require('crypto');
@@ -17,7 +19,13 @@ const {
 } = require('./data/memory');
 
 class Fragment {
-  static validTypes = [`text/plain`];
+  static validTypes = {
+    'text/plain': ['text/plain'],
+    'text/markdown': ['text/markdown', 'text/html', 'text/plain'],
+    'text/html': ['text/html', 'text/plain'],
+    'text/csv': ['text/csv', 'text/plain', 'application/json'],
+    'application/json': ['application/json', 'application/yaml', 'text/plain'],
+  };
 
   constructor({ id, ownerId, created, updated, type, size = 0 }) {
     // Make sure owner ID and type are required
@@ -39,14 +47,12 @@ class Fragment {
     const datetime = new Date().toISOString();
 
     // Assign the properties to the object
-    this.id = id || randomUUID();
+    this.id = id ? id : randomUUID();
     this.ownerId = ownerId;
-    this.created = created;
-    this.updated = updated;
     this.type = type;
     this.size = size;
-    this.created = created || datetime;
-    this.updated = updated || datetime;
+    this.created = created ? created : datetime;
+    this.updated = updated ? updated : datetime;
   }
 
   /**
@@ -83,25 +89,25 @@ class Fragment {
    * @param {string} id fragment's id
    * @returns Promise<void>
    */
-  static delete(ownerId, id) {
-    return deleteFragment(ownerId, id);
+  static async delete(ownerId, id) {
+    await deleteFragment(ownerId, id);
   }
 
   /**
    * Saves the current fragment (metadata) to the database
    * @returns Promise<void>
    */
-  save() {
+  async save() {
     this.updated = new Date().toISOString();
-    return writeFragment(this);
+    await writeFragment(this);
   }
 
   /**
    * Gets the fragment's data from the database
    * @returns Promise<Buffer>
    */
-  getData() {
-    return readFragmentData(this.ownerId, this.id);
+  async getData() {
+    return await readFragmentData(this.ownerId, this.id);
   }
 
   /**
@@ -110,12 +116,30 @@ class Fragment {
    * @returns Promise<void>
    */
   async setData(data) {
-    if (!data) {
-      return Promise.reject(new Error('Invalid Data. Did not receive valid data'));
+    // if (!Buffer.isBuffer(data)) {
+    //   throw new Error('Invalid Data. Did not receive valid data');
+    // }
+    // this.updated = new Date().toISOString();
+    // this.size = data.length;
+    // await writeFragmentData(this.ownerId, this.id, data);
+    if (!Buffer.isBuffer(data)) {
+      //If the data is not Buffer
+      logger.warn(
+        `Invalid data type for fragment ID: ${this.id}. Expected Buffer but got ${typeof data}`
+      );
+      throw new Error('Data must be a Buffer');
     }
-    this.size = data.length;
-    await this.save(); // Ensure metadata is updated before writing data
-    return writeFragmentData(this.ownerId, this.id, data);
+    this.size = data.length; // Update the size with the length of the buffer
+    this.updated = new Date().toISOString(); // Update the timestamp
+    await this.save();
+    logger.info(`Setting data for fragment ID: ${this.id}, new size: ${this.size}`);
+    try {
+      await writeFragmentData(this.ownerId, this.id, data);
+      logger.info(`Data successfully set for fragment ID: ${this.id}`);
+    } catch (error) {
+      logger.error(`Failed to set data for fragment ID: ${this.id}, Error: ${error.message}`);
+      throw error;
+    }
   }
 
   /**
@@ -133,7 +157,8 @@ class Fragment {
    * @returns {boolean} true if fragment's type is text/*
    */
   get isText() {
-    return this.mimeType.split('/')[0] === 'text';
+    const type = this.mimeType;
+    return type.startsWith('text/');
   }
 
   /**
@@ -141,16 +166,17 @@ class Fragment {
    * @returns {Array<string>} list of supported mime types
    */
   get formats() {
-    return Fragment.validTypes;
+    return Fragment.validTypes[contentType.parse(this.type).type];
   }
 
   /**
    * Returns true if we know how to work with this content type
-   * @param {string} value a Content-Type value (e.g., 'text/plain' or 'text/plain; charset=utf-8')
+   * @param {string} value a Content-Type value
    * @returns {boolean} true if we support this Content-Type (i.e., type/subtype)
    */
   static isSupportedType(value) {
-    return Fragment.validTypes.includes(contentType.parse(value).type);
+    let parsedValue = contentType.parse(value);
+    return Object.keys(Fragment.validTypes).includes(parsedValue.type);
   }
 }
 
