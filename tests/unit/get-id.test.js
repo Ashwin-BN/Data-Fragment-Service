@@ -7,7 +7,14 @@ const path = require('path');
 
 const filesDir = path.join(__dirname, '../files'); // Path to test files
 
-// Helper function to create fragments from files
+/**
+ * Helper function to create a fragment from a file
+ * @param {string} fileName - The name of the file to be uploaded
+ * @param {string} authEmail - The email for authentication
+ * @param {string} authPassword - The password for authentication
+ * @param {string} contentType - The content type of the file
+ * @returns {Promise<Object>} - The fragment created from the file
+ */
 const createFragmentFromFile = async (fileName, contentType) => {
   const filePath = path.join(filesDir, fileName);
   const fileData = fs.readFileSync(filePath, 'utf8');
