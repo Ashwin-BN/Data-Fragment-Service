@@ -17,7 +17,7 @@ const filesDir = path.join(__dirname, '../files'); // Path to test files
  */
 const createFragmentFromFile = async (fileName, contentType) => {
   const filePath = path.join(filesDir, fileName);
-  const fileData = fs.readFileSync(filePath, 'utf8');
+  const fileData = fs.readFileSync(filePath, { encoding: 'utf8', flag: 'r' }).trim();
   return request(app)
     .post('/v1/fragments')
     .auth('user1@email.com', 'password1')
@@ -59,7 +59,7 @@ describe('POST /v1/fragments', () => {
         id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
         ownerId: expect.stringMatching(/^[0-9a-f]{64}$/),
         type: 'text/plain',
-        size: 34,
+        size: 32,
         created: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
         updated: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
       });
@@ -77,7 +77,7 @@ describe('POST /v1/fragments', () => {
         id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
         ownerId: expect.stringMatching(/^[0-9a-f]{64}$/),
         type: 'text/plain; charset=utf-8',
-        size: 34,
+        size: 32,
         created: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
         updated: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
       });
@@ -95,7 +95,7 @@ describe('POST /v1/fragments', () => {
         id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
         ownerId: expect.stringMatching(/^[0-9a-f]{64}$/),
         type: 'text/html',
-        size: 44,
+        size: 42,
         created: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
         updated: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
       });
@@ -113,7 +113,7 @@ describe('POST /v1/fragments', () => {
         id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
         ownerId: expect.stringMatching(/^[0-9a-f]{64}$/),
         type: 'text/markdown',
-        size: 40,
+        size: 38,
         created: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
         updated: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
       });
@@ -132,7 +132,7 @@ describe('POST /v1/fragments', () => {
         id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
         ownerId: expect.stringMatching(/^[0-9a-f]{64}$/),
         type: 'text/csv',
-        size: 71,
+        size: 66,
         created: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
         updated: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
       });
@@ -151,7 +151,7 @@ describe('POST /v1/fragments', () => {
         id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
         ownerId: expect.stringMatching(/^[0-9a-f]{64}$/),
         type: 'application/json',
-        size: 59,
+        size: 53,
         created: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
         updated: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
       });
