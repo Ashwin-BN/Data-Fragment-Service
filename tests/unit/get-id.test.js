@@ -210,4 +210,17 @@ describe('GET /v1/fragments/:id/info', () => {
       },
     });
   });
+
+  test('Should retrieve and return .md file as HTML after conversion', async () => {
+    const fileName = 'file.md';
+    let res = await createFragmentFromFile(fileName, 'text/markdown');
+    const fragmentId = res.body.fragment?.id;
+
+    const htmlRes = await request(app)
+      .get(`/v1/fragments/${fragmentId}.html`)
+      .auth('user1@email.com', 'password1');
+
+    expect(htmlRes.statusCode).toBe(200);
+    expect(htmlRes.text).toContain('<h1>Hello World! This is a markdown file</h1>');
+  });
 });
