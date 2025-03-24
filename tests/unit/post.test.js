@@ -209,7 +209,7 @@ describe('POST /v1/fragments', () => {
         status: 'error',
         error: {
           code: 415,
-          message: 'invalid content-type of request',
+          message: 'Invalid Content-Type of request',
         },
       });
     });

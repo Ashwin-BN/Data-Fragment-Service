@@ -134,6 +134,36 @@ describe('Fragment Retrieval API - GET /v1/fragments/:id', () => {
         .auth('user1@email.com', 'password1')
         .expect(404);
     });
+
+    test('Should preserve Content-Type charset specification', async () => {
+      const fileName = 'file.txt';
+      const charsetContentType = 'text/plain; charset=utf-8';
+
+      // Create fragment with charset specified
+      let res = await createFragmentFromFile(fileName, charsetContentType);
+
+      // Verify creation succeeded
+      expect(res.status).toBe(201);
+      expect(res.body.status).toBe('ok');
+      const fragmentId = res.body.fragment?.id;
+
+      // Check fragment metadata to verify charset preservation
+      const metadataRes = await request(app)
+        .get(`/v1/fragments/${fragmentId}/info`)
+        .auth('user1@email.com', 'password1');
+
+      expect(metadataRes.statusCode).toBe(200);
+      expect(metadataRes.body.status).toBe('ok');
+      expect(metadataRes.body.fragment.type).toBe(charsetContentType);
+
+      // Verify charset is preserved during retrieval
+      const retrieveRes = await request(app)
+        .get(`/v1/fragments/${fragmentId}`)
+        .auth('user1@email.com', 'password1');
+
+      expect(retrieveRes.statusCode).toBe(200);
+      expect(retrieveRes.header['content-type']).toBe(charsetContentType);
+    });
   });
 
   describe('Large File Handling', () => {

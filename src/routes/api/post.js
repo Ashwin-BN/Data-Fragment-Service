@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
     // Ensure request body is a Buffer (binary data)
     if (!Buffer.isBuffer(req.body)) {
       logger.error({ req }, 'invalid content-type');
-      return res.status(415).json(createErrorResponse(415, 'invalid content-type of request'));
+      return res.status(415).json(createErrorResponse(415, 'Invalid Content-Type of request'));
     }
 
     // The body of the fragment should not be empty

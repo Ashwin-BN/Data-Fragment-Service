@@ -28,7 +28,7 @@ module.exports.getFragmentById = async (req, res) => {
     // If no extension is provided or if the extension is the same as the fragment's MIME type, return the original fragment
     if (!extension || finalType === fragment.mimeType) {
       logger.info('Returning data in original format');
-      res.setHeader('Content-Type', fragment.mimeType);
+      res.setHeader('Content-Type', fragment.type);
       return res.status(200).send(fragmentData);
     }
 
