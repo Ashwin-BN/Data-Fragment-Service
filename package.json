@@ -5,7 +5,7 @@
   "description": "Fragments back-end API",
   "scripts": {
     "test:watch": "jest -c jest.config.js --runInBand --watch --",
-    "test:integration": "hurl --test --glob \"tests/integration/**/*.hurl\"",
+    "test:integration": "hurl --file-root tests/files --test --glob \"tests/integration/**/*.hurl\"",
     "test": "jest -c jest.config.js --runInBand --",
     "coverage": "jest -c jest.config.js --runInBand --coverage",
     "lint": "eslint \"./src/**/*.js\" \"tests/**/*.js\"",
