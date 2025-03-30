@@ -59,7 +59,7 @@ module.exports = async (req, res) => {
     await fragment.setData(req.body);
 
     // Fetch saved fragment
-    const storedFragment = await Fragment.byId(req.user, fragment.id);
+    const storedFragment = fragment;
 
     logger.info('Fragment created successfully');
 

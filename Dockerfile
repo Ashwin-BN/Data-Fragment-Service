@@ -75,8 +75,12 @@ COPY ./tests/.htpasswd ./tests/.htpasswd
 # We run our service on port 8080
 # We use EXPOSE in order to indicate the port(s) that a container will listen on when run 
 # For example, a web server might EXPOSE 80, indicating that port 80 is the typical port used by this container.
-EXPOSE 8080
+EXPOSE ${PORT}
+
+# Health check configuration
+HEALTHCHECK --interval=60s --timeout=60s --start-period=10s \
+    CMD curl --fail http://localhost:${PORT}/ || exit 1
 
 # Start the container by running our server
 # https://docs.docker.com/reference/dockerfile/#cmd
-CMD ["npm", "start"]
+CMD ["node", "src/index.js"]
