@@ -1,6 +1,8 @@
 // src/utils/typeValidation.js
 
 const logger = require('../logger');
+const sharp = require('sharp');
+const yaml = require('js-yaml');
 
 /**
  * Validates fragment data against its specified content type.
@@ -23,6 +25,22 @@ module.exports.validateFragment = async (fragmentData, fragmentType) => {
       // Throw an error if the program is unable to parse the JSON
       validateJson(fragmentData);
       break;
+
+    case 'application/yml':
+    case 'application/yaml':
+      // Throw an error if the program is unable to parse the YAML
+      validateYaml(fragmentData);
+      break;
+
+    case 'image/jpeg':
+    case 'image/png':
+    case 'image/webp':
+    case 'image/avif':
+    case 'image/gif': {
+      // Throw an Error if the program is unable to parse the image
+      await validateImage(fragmentData, fragmentType);
+      break;
+    }
 
     default:
       logger.error(`Unsupported content type: ${fragmentType}`);
@@ -57,5 +75,54 @@ const validateJson = (fragmentData) => {
     const errorMessage = `Invalid JSON data: ${error.message}`;
     logger.error(errorMessage);
     throw new Error(errorMessage);
+  }
+};
+
+/**
+ * Validates YAML data ensuring it's properly formatted.
+ * @param {string|Buffer} fragmentData - YAML string or Buffer to parse
+ * @throws {Error} If YAML parsing fails
+ */
+const validateYaml = (fragmentData) => {
+  try {
+    // Convert Buffer to string if necessary
+    const yamlString = Buffer.isBuffer(fragmentData) ? fragmentData.toString() : fragmentData;
+    yaml.load(yamlString);
+  } catch (error) {
+    const errorMessage = `Invalid YAML data: ${error.message}`;
+    logger.error(errorMessage);
+    throw new Error(errorMessage);
+  }
+};
+
+/**
+ * Validates image data ensuring it's properly formatted.
+ * @param {string|Buffer} fragmentData - Image data to validate
+ * @param {string} fragmentType - Expected image MIME type
+ * @throws {Error} If image validation fails
+ */
+const validateImage = async (fragmentData, expectedType) => {
+  try {
+    // Use sharp to get metadata about the image
+    const metadata = await sharp(fragmentData).metadata();
+
+    const expectedFormat = expectedType.split('/')[1];
+    let actualFormat = metadata.format;
+    // Handle the AVIF format being reported as HEIF by sharp
+    if (expectedFormat === 'avif' && actualFormat === 'heif') {
+      actualFormat = 'avif';
+    }
+
+    if (actualFormat !== expectedFormat) {
+      logger.error(
+        `Invalid image data, expected ${expectedFormat} but ${actualFormat} was passed instead`
+      );
+      throw new Error(
+        `Invalid image data, expected ${expectedFormat} but ${actualFormat} was passed instead`
+      );
+    }
+  } catch (error) {
+    logger.error(`Invalid image data, ${error.message}`);
+    throw new Error(`Invalid image data, ${error.message}`);
   }
 };
