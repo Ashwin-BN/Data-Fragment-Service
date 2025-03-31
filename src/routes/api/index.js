@@ -7,6 +7,7 @@ const express = require('express');
 const contentType = require('content-type');
 const { Fragment } = require('../../model/fragment');
 const { getFragmentById, getFragmentMetadataById } = require('./get-id');
+const { deleteFragment } = require('./delete');
 
 // Create a router on which to mount our API endpoints
 const router = express.Router();
@@ -40,5 +41,9 @@ router.get('/fragments/:id/info', getFragmentMetadataById);
 // POST /v1/fragments
 // Creates new fragment for the authenticated user
 router.post('/fragments', rawBody(), require('./post'));
+
+// DELETE /v1/fragments/:id
+// Deletes a fragment's metadata and data
+router.delete('/fragments/:id', deleteFragment);
 
 module.exports = router;
