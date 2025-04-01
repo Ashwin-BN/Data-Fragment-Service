@@ -1,0 +1,19 @@
+{
+  "ipcMode": null,
+  "executionRoleArn": "arn:aws:iam::469901282111:role/LabRole",
+  "containerDefinitions": [
+    {
+      "name": "fragments",
+      "image": "ashwinbn/fragments:latest",
+      "portMappings": [],
+      "essential": true,
+      "environment": []
+    }
+  ],
+  "family": "fragments-task",
+  "networkMode": "awsvpc",
+  "taskRoleArn": "arn:aws:iam::469901282111:role/LabRole",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512"
+}
