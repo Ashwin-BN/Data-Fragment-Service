@@ -82,6 +82,28 @@ describe('Fragment Deletion API - DELETE /v1/fragments/:id', () => {
 
       expect(getResponse.status).toBe(404);
     });
+
+    test('Authenticated users are able to delete a YAML fragment', async () => {
+      const filePath = path.join(__dirname, '..', 'files', 'file.yaml');
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+
+      const createResponse = await request(app)
+        .post('/v1/fragments')
+        .auth('user1@email.com', 'password1')
+        .set('Content-Type', 'application/yaml')
+        .send(fileContent);
+
+      expect(createResponse.status).toBe(201);
+
+      const deleteResponse = await request(app)
+        .delete(`/v1/fragments/${createResponse.body.fragment.id}`)
+        .auth('user1@email.com', 'password1');
+
+      expect(deleteResponse.statusCode).toBe(200);
+      expect(deleteResponse.body).toEqual({
+        status: 'ok',
+      });
+    });
   });
 
   describe('Edge Cases', () => {
