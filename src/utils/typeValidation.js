@@ -122,7 +122,7 @@ const validateImage = async (fragmentData, expectedType) => {
       );
     }
   } catch (error) {
-    logger.error(`Invalid image data, ${error.message}`);
-    throw new Error(`Invalid image data, ${error.message}`);
+    logger.error(error.message, `Invalid image data`);
+    throw new Error(error.message, `Invalid image data`);
   }
 };

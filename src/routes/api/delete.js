@@ -38,7 +38,7 @@ module.exports.deleteFragment = async (req, res) => {
   } catch (error) {
     // Handle missing fragment error
     if (error.message === 'Fragment does not exist') {
-      logger.error('Fragment does not exist', { userId: req.user.id, fragmentId });
+      logger.error({ userId: req.user.id, fragmentId }, 'Fragment does not exist');
       return res
         .status(404)
         .send(createErrorResponse(404, "The requested fragment doesn't exist."));
@@ -46,8 +46,8 @@ module.exports.deleteFragment = async (req, res) => {
 
     // Handle unexpected errors during deletion
     logger.error(
-      'An error occurred while deleting fragment data and metadata for the user:',
-      error.message
+      error.message,
+      'An error occurred while deleting fragment data and metadata for the user'
     );
     res.status(500).send(createErrorResponse(500, 'Internal Server Error'));
   }

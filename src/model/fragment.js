@@ -16,7 +16,7 @@ const {
   writeFragmentData,
   listFragments,
   deleteFragment,
-} = require('./data/memory');
+} = require('./data');
 
 class Fragment {
   static validTypes = {
@@ -137,7 +137,7 @@ class Fragment {
       await writeFragmentData(this.ownerId, this.id, data);
       logger.info(`Data successfully set for fragment ID: ${this.id}`);
     } catch (error) {
-      logger.error(`Failed to set data for fragment ID: ${this.id}, Error: ${error.message}`);
+      logger.error(error.message, `Failed to set data for fragment ID: ${this.id}`);
       throw error;
     }
   }

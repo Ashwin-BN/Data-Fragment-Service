@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
     }
   } catch (error) {
     // Catch any errors that occur during the fragment fetching process
-    logger.error('An error occurred while fetching the list of fragments for user:', error.message);
+    logger.error(error.message, 'An error occurred while fetching the list of fragments for user');
     res.status(500).send(createErrorResponse(500, 'Internal Server Error'));
   }
 };

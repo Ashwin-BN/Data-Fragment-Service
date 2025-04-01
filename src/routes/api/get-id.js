@@ -45,10 +45,13 @@ module.exports.getFragmentById = async (req, res) => {
     }
 
     // If type conversion is not possible, return an error
-    logger.error('Type conversion not possible', {
-      mimeType: fragment.mimeType,
-      formats: fragment.formats,
-    });
+    logger.error(
+      {
+        mimeType: fragment.mimeType,
+        formats: fragment.formats,
+      },
+      'Type conversion not possible'
+    );
     return res
       .status(415)
       .send(
@@ -60,12 +63,12 @@ module.exports.getFragmentById = async (req, res) => {
   } catch (error) {
     // If the requested fragment doesn't exist
     if (error.message === 'Fragment does not exist') {
-      logger.error('Fragment does not exist', { userId: req.user.id, fragmentId });
+      logger.error({ userId: req.user.id, fragmentId }, 'Fragment does not exist');
       return res
         .status(404)
         .send(createErrorResponse(404, "The requested fragment doesn't exist."));
     }
-    logger.error('Error fetching fragment by ID for user:', error.message);
+    logger.error(error.message, 'Error fetching fragment by ID for user');
     res.status(500).send(createErrorResponse(500, error.message));
   }
 };
@@ -90,7 +93,7 @@ module.exports.getFragmentMetadataById = async (req, res) => {
   } catch (error) {
     // If the requested fragment doesn't exist
     if (error.message === 'Fragment does not exist') {
-      logger.error('Fragment does not exist', { userId: req.user.id, fragmentId });
+      logger.error({ userId: req.user.id, fragmentId }, 'Fragment does not exist');
       return res
         .status(404)
         .send(createErrorResponse(404, "The requested fragment doesn't exist."));
