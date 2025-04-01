@@ -97,6 +97,5 @@
   },
   "registeredAt": "2025-04-01T02:06:35.200Z",
   "registeredBy": "arn:aws:sts::469901282111:assumed-role/voclabs/user3765017=B_N,_Ashwin",
-  "enableFaultInjection": false,
   "tags": []
 }
