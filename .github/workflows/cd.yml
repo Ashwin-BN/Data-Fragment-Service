@@ -96,14 +96,11 @@ jobs:
             AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_SESSION_TOKEN=${{ secrets.AWS_SESSION_TOKEN }}
             NODE_ENV=${{ secrets.AWS_SESSION_TOKEN }}
-            AWS_DYNAMODB_TABLE_NAME=${{ secrets.AWS_DYNAMODB_TABLE_NAME }}
             AWS_COGNITO_POOL_ID=${{ secrets.AWS_COGNITO_POOL_ID }}
             AWS_COGNITO_CLIENT_ID=${{ secrets.AWS_COGNITO_CLIENT_ID }}
             PORT=${{ secrets.PORT }}
             AWS_REGION=${{ secrets.AWS_REGION }}
             AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}
-            USE_AWS_AUTH=${{ secrets.USE_AWS_AUTH }}
-            USE_AWS_MEMORY=${{ secrets.USE_AWS_MEMORY }}
             # ...continue the rest here...
 
       # The aws-actions/amazon-ecs-deploy-task-definition action registers our newly updated task definition with our ECS cluster,
