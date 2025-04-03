@@ -1,6 +1,5 @@
 // src/model/data/aws/index.js
 
-const MemoryDB = require('../memory/memory-db');
 const s3Client = require('./s3Client');
 const ddbDocClient = require('./ddbDocClient');
 const { PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
@@ -8,7 +7,6 @@ const { PutCommand, GetCommand, QueryCommand, DeleteCommand } = require('@aws-sd
 const logger = require('../../../logger');
 
 logger.info('Using AWS S3 and DynamoDB for fragments data storage');
-const metadata = new MemoryDB();
 
 // Convert a stream of data into a Buffer, by collecting
 // chunks of data until finished, then assembling them together.
