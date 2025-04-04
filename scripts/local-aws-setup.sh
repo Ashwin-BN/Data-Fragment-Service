@@ -1,5 +1,4 @@
 #!/bin/sh
-
 # scripts/local-aws-setup.sh
 
 # Setup steps for working with LocalStack and DynamoDB local instead of AWS.

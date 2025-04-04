@@ -90,7 +90,7 @@ jobs:
           node-version: 'lts/*'
           cache: 'npm'
       - name: Install node dependencies
-        # NOTE: we need to install dev dependencies too vs. production only for hurl
+        # NOTE: we need to install dev dependencies too vs. production only for hurl.
         run: npm install
       - name: Build Containers
         run: docker compose up -d
