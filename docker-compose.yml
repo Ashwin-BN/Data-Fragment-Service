@@ -28,8 +28,8 @@ services:
       - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME:-fragments}
       - AWS_DYNAMODB_TABLE_NAME=${AWS_DYNAMODB_TABLE_NAME:-fragments}
       # AWS CLI
-      - AWS_ACCESS_KEY_ID=ASIAW22CMRM76VWP6BXV
-      - AWS_SECRET_ACCESS_KEY=Z5OzrR1PtCkMA8MzffaZqJgLnCXX+7MbIEu/z7JA
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
     # Ports to publish
     ports:
       - '8080:8080'

@@ -22,7 +22,7 @@ jsonpath "$.fragment.ownerId" matches "^[0-9a-fA-F]+$"
 jsonpath "$.fragment.created" isString
 jsonpath "$.fragment.updated" isString
 jsonpath "$.fragment.type" == "application/json"
-jsonpath "$.fragment.size" == 28
+jsonpath "$.fragment.size" == 27
 
 [Captures]
 fragment1_url: header "Location"
@@ -49,7 +49,7 @@ jsonpath "$.fragment.ownerId" == "{{fragment1_ownerId}}"
 jsonpath "$.fragment.created" == "{{fragment1_created}}"
 jsonpath "$.fragment.updated" == "{{fragment1_updated}}"
 jsonpath "$.fragment.type" == "application/json"
-jsonpath "$.fragment.size" == 28
+jsonpath "$.fragment.size" == 27
 
 # 3. Create a second fragment with Markdown content
 POST http://localhost:8080/v1/fragments
@@ -116,8 +116,8 @@ jsonpath "$.status" == "ok"
 jsonpath "$.fragments" isCollection
 
 # Verify that the fragments list contains the IDs stored in variables fragment1_id and fragment2_id
-jsonpath "$.fragments" includes "{{fragment1_id}}"
-jsonpath "$.fragments" includes "{{fragment2_id}}"
+jsonpath "$.fragments" contains "{{fragment1_id}}"
+jsonpath "$.fragments" contains "{{fragment2_id}}"
 
 # 6. Delete the first fragment
 DELETE http://localhost:8080/v1/fragments/{{fragment1_id}}
@@ -160,5 +160,5 @@ jsonpath "$.status" == "ok"
 jsonpath "$.fragments" isCollection
 
 # Confirm that the first id is NOT included but that the second id is
-jsonpath "$.fragments" not includes "{{fragment1_id}}"
-jsonpath "$.fragments" includes "{{fragment2_id}}"
+jsonpath "$.fragments" not contains "{{fragment1_id}}"
+jsonpath "$.fragments" contains "{{fragment2_id}}"

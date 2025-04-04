@@ -70,7 +70,7 @@ module.exports = async (req, res) => {
     // Send success response
     return res.status(201).send(createSuccessResponse({ fragment: storedFragment }));
   } catch (err) {
-    logger.error({ err: err.message }, 'Error creating fragment');
+    logger.error({ Error: err.message }, 'Error creating fragment');
     return res.status(500).send(createErrorResponse(500, `Internal Server Error: ${err.message}`));
   }
 };
