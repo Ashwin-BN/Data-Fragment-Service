@@ -46,4 +46,8 @@ router.post('/fragments', rawBody(), require('./post'));
 // Deletes a fragment's metadata and data
 router.delete('/fragments/:id', deleteFragment);
 
+// PUT /v1/fragments/:id
+// Allows users to update an existing fragment's data
+router.put('/fragments/:id', rawBody(), require('./put'));
+
 module.exports = router;
