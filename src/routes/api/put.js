@@ -3,7 +3,7 @@
 const { Fragment } = require('../../model/fragment');
 const { createSuccessResponse, createErrorResponse } = require('../../response');
 const contentType = require('content-type');
-const { validateFragment } = require('../../utils/types/typeValidation');
+const { validateFragment } = require('../../utils/typeValidation');
 
 const logger = require('../../logger');
 
