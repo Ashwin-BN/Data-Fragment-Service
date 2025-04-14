@@ -7,15 +7,17 @@ const fs = require('fs');
 
 // Helper function to create fragments from files
 const filesDir = path.join(__dirname, '../files'); // Path to test files
+
 /**
- * Helper function to create a fragment from a file
- * @param {string} fileName - The name of the file to be uploaded
- * @param {string} authEmail - The email for authentication
- * @param {string} authPassword - The password for authentication
- * @param {string} contentType - The content type of the file
- * @returns {Promise<Object>} - The fragment created from the file
+ * Creates a non-image fragment from a file
+ *
+ * @param {string} fileName - Name of the file to upload
+ * @param {string} authEmail - Authentication email
+ * @param {string} authPassword - Authentication password
+ * @param {string} contentType - MIME type of the file
+ * @returns {Promise<Object>} - Created fragment response
  */
-const createFragmentFromFile = async (fileName, contentType) => {
+const createNonImageFragmentFromFile = async (fileName, contentType) => {
   const filePath = path.join(filesDir, fileName);
   const fileData = fs.readFileSync(filePath, 'utf8');
   return request(app)
@@ -59,10 +61,10 @@ describe('GET /v1/fragments', () => {
 
   test('Authenticated users get an array of fragment metadata objects when the expand query is passed', async () => {
     // Create two fragments using the helper function
-    const createResponse1 = await createFragmentFromFile('file.txt', 'text/plain');
+    const createResponse1 = await createNonImageFragmentFromFile('file.txt', 'text/plain');
     expect(createResponse1.status).toBe(201);
 
-    const createResponse2 = await createFragmentFromFile('file2.txt', 'text/plain');
+    const createResponse2 = await createNonImageFragmentFromFile('file2.txt', 'text/plain');
     expect(createResponse2.status).toBe(201);
 
     const readResponse = await request(app)
@@ -88,7 +90,7 @@ describe('GET /v1/fragments', () => {
 
   test('An array of string fragment IDs is returned even if an invalid query is passed', async () => {
     // Create a fragment using the helper function
-    const createResponse = await createFragmentFromFile('file.txt', 'text/plain');
+    const createResponse = await createNonImageFragmentFromFile('file.txt', 'text/plain');
     expect(createResponse.status).toBe(201);
 
     const readResponse = await request(app)
@@ -109,7 +111,7 @@ describe('GET /v1/fragments', () => {
 
   test('Should throw a 415 error the ID of a CSV fragment is passed and a .png extension is passed.', async () => {
     // Create a CSV fragment using the helper function
-    const createResponse = await createFragmentFromFile('file.csv', 'text/csv');
+    const createResponse = await createNonImageFragmentFromFile('file.csv', 'text/csv');
     expect(createResponse.status).toBe(201);
 
     // Reading the data from the database
