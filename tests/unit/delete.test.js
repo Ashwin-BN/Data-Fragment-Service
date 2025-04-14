@@ -8,14 +8,15 @@ const path = require('path');
 const filesDir = path.join(__dirname, '../files'); // Path to test files
 
 /**
- * Helper function to create a fragment from a file
- * @param {string} fileName - The name of the file to be uploaded
- * @param {string} authEmail - The email for authentication
- * @param {string} authPassword - The password for authentication
- * @param {string} contentType - The content type of the file
- * @returns {Promise<Object>} - The fragment created from the file
+ * Creates a non-image fragment from a file
+ *
+ * @param {string} fileName - Name of the file to upload
+ * @param {string} authEmail - Authentication email
+ * @param {string} authPassword - Authentication password
+ * @param {string} contentType - MIME type of the file
+ * @returns {Promise<Object>} - Created fragment response
  */
-const createFragmentFromFile = async (fileName, contentType) => {
+const createNonImageFragmentFromFile = async (fileName, contentType) => {
   const filePath = path.join(filesDir, fileName);
   const fileData = fs.readFileSync(filePath, 'utf8');
   return request(app)
@@ -25,7 +26,35 @@ const createFragmentFromFile = async (fileName, contentType) => {
     .set('Content-Type', contentType);
 };
 
+/**
+ * Creates an image fragment from a file
+ *
+ * @param {string} fileName - Name of the image file to upload
+ * @param {string} contentType - MIME type of the image
+ * @returns {Promise<Object>} - Created fragment response
+ *
+ * @note Uses binary buffer for image data to preserve file integrity
+ */
+const createImageFragmentFromFile = async (fileName, contentType) => {
+  const filePath = path.join(filesDir, fileName);
+  const fileData = fs.readFileSync(filePath); // Read as binary buffer
+  return request(app)
+    .post('/v1/fragments')
+    .auth('user1@email.com', 'password1')
+    .send(fileData)
+    .set('Content-Type', contentType); // Content-Type as binary for images
+};
+
+/**
+ * Test suite for Fragment Deletion API
+ *
+ * This suite tests the DELETE /v1/fragments/:id endpoint
+ * covering authentication, deletion scenarios, and edge cases
+ */
 describe('Fragment Deletion API - DELETE /v1/fragments/:id', () => {
+  /**
+   * Tests basic deletion scenarios including authentication
+   */
   describe('Basic Deletion Tests', () => {
     test('Unauthenticated requests are denied', () =>
       request(app).delete('/v1/fragments/123').expect(401));
@@ -52,6 +81,11 @@ describe('Fragment Deletion API - DELETE /v1/fragments/:id', () => {
     });
   });
 
+  /**
+   * Tests deletion across different content types
+   *
+   * Ensures consistent behavior for all supported formats
+   */
   describe('Cross-Type Deletion Tests', () => {
     test.each([
       ['file.txt', 'text/plain'],
@@ -60,9 +94,18 @@ describe('Fragment Deletion API - DELETE /v1/fragments/:id', () => {
       ['file.md', 'text/markdown'],
       ['file.json', 'application/json'],
       ['file.yaml', 'application/yaml'],
+      ['file.png', 'image/png'],
+      ['file.jpg', 'image/jpeg'],
+      ['file.jpeg', 'image/jpeg'],
+      ['file.webp', 'image/webp'],
+      ['file.avif', 'image/avif'],
+      ['file.gif', 'image/gif'],
     ])('Should delete fragments of different types: %s', async (fileName, contentType) => {
       // Create fragment
-      const createResponse = await createFragmentFromFile(fileName, contentType);
+      const createResponse = contentType.startsWith('image')
+        ? await createImageFragmentFromFile(fileName, contentType)
+        : await createNonImageFragmentFromFile(fileName, contentType);
+
       const fragmentId = createResponse.body.fragment?.id;
 
       // Delete fragment
@@ -106,6 +149,11 @@ describe('Fragment Deletion API - DELETE /v1/fragments/:id', () => {
     });
   });
 
+  /**
+   * Tests edge cases and error scenarios
+   *
+   * Ensures robust error handling for unusual inputs
+   */
   describe('Edge Cases', () => {
     test('Should handle malformed fragment IDs gracefully', async () => {
       const deleteResponse = await request(app)
