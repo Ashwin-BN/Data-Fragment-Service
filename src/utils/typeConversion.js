@@ -15,11 +15,6 @@ const sharp = require('sharp');
  * @throws {Error} - If conversion between the given types is not supported.
  */
 module.exports.typeConversion = async ({ currentType, finalType, fragmentData }) => {
-  // Input validation
-  if (!currentType || !finalType || !fragmentData) {
-    throw new Error('Missing required parameters');
-  }
-
   // Route conversion request to appropriate handler based on target type
   switch (finalType) {
     case 'text/plain':
@@ -59,8 +54,9 @@ const convertToTextPlain = async (currentType, fragmentData) => {
       case 'text/markdown':
         return fragmentData.toString();
       case 'application/json':
-      case 'application/yaml':
         return JSON.stringify(JSON.parse(fragmentData.toString()), null, 2);
+      case 'application/yaml':
+        return JSON.stringify(yaml.load(fragmentData.toString()), null, 2);
       default:
         throw new Error(`Type conversion from ${currentType} to text/plain is not supported.`);
     }
