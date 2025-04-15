@@ -13,8 +13,12 @@
 name: cd
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
-    # Whenever a new tag is pushed
+    branches:
+      - main
     tags:
       # Any tag starting with v... should trigger this workflow.
       - 'v**'
@@ -94,7 +98,6 @@ jobs:
             NODE_ENV=production
             AWS_COGNITO_POOL_ID=${{ secrets.AWS_COGNITO_POOL_ID }}
             AWS_COGNITO_CLIENT_ID=${{ secrets.AWS_COGNITO_CLIENT_ID }}
-            AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}
             AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}
 
       # The aws-actions/amazon-ecs-deploy-task-definition action registers our newly updated task definition with our ECS cluster,
