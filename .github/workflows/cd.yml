@@ -99,6 +99,7 @@ jobs:
             AWS_COGNITO_POOL_ID=${{ secrets.AWS_COGNITO_POOL_ID }}
             AWS_COGNITO_CLIENT_ID=${{ secrets.AWS_COGNITO_CLIENT_ID }}
             AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}
+            AWS_DYNAMODB_TABLE_NAME=${{ secrets.AWS_DYNAMODB_TABLE_NAME }}
 
       # The aws-actions/amazon-ecs-deploy-task-definition action registers our newly updated task definition with our ECS cluster,
       # and asks our ECS service to schedule it for deployment (i.e., stop existing tasks and use the new definition to deploy new ones).
