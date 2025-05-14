@@ -1,185 +1,170 @@
-# Fragments Microservice
+# Data Fragment Service
+
+A highly scalable, cloud-native microservice engineered for seamless storage, retrieval, and management of diverse data fragments originating from IoT devices in industrial environments. Built with AWS services for optimal security, scalability, and integration efficiency, this service is designed to enhance data flow in connected ecosystems.
 
 ## Overview
 
-The **Fragments Microservice** is designed for a fictional Canadian manufacturing company to manage and work with small fragments of text or images. These fragments are smaller than traditional documents and come in a variety of formats (text, images, etc.). This microservice is built to be scalable, providing CRUD operations on fragments and enabling format conversions. The service integrates with AWS and other internal systems for efficient handling of data and ensures robust authentication and authorization.
-
----
+The Data Fragment Service offers a secure, efficient API for managing various data fragment types, including text, JSON, and images. Equipped with format conversion capabilities and AWS Cognito authentication, it seamlessly integrates with industrial IoT systems to optimize data management in real time.
 
 ## Key Features
 
-- **HTTP REST API**: Exposes endpoints to interact with the fragments (text and image data).
-- **Fragment CRUD Operations**: Enables the creation, retrieval, updating, and deletion of fragments.
-- **Format Conversion**: Allows conversion of fragments between different formats, such as converting Markdown to HTML or JPEG to PNG, without increasing storage costs.
-- **Authorization**: Ensures proper authorization for all operations, isolating data between different users.
-- **Scalability**: Designed to scale massively to handle large amounts of data.
-- **Deployment**: Deployed to AWS, with automatic build, testing, and deployment using GitHub.
+* **Multi-format Data Handling**
 
----
+  * Store, retrieve, and manage:
 
-## Table of Contents
+    * **Text** – Plain text, Markdown, HTML, CSV
+    * **Data Formats** – JSON, YAML
+    * **Images** – PNG, JPEG, WebP, AVIF, GIF
 
-- [Installation](#installation)
-- [Environment Variables](#environment-variables)
-- [Running the API Locally](#running-the-api-locally)
-- [API Documentation](#api-documentation)
-- [Health Check](#health-check)
-- [Fragments API](#fragments-api)
-- [Contributing](#contributing)
-- [License](#license)
+* **Enterprise-Grade Security**
 
----
+  * Seamless integration with **AWS Cognito** for identity management
+  * Secure **JWT-based authorization** for every request
+  * User isolation and role-based access control to protect sensitive data
 
-## Installation
+* **Advanced Format Conversion**
 
-To get started with the project, follow the steps below.
+  * Effortlessly convert between supported formats
+  * Integrity checks and automatic validation
+  * Ensures original format is preserved for auditability
 
-### Clone the Repository
+* **Scalable Cloud Architecture**
 
-```bash
-git clone <repository-url>
-cd <repository-folder>
+  * Dockerized for containerized deployments
+  * GitHub Actions for **CI/CD automation**
+  * **Amazon ECS** and **Amazon ECR** for scalable, cloud-native deployments
+
+## Architecture Overview
+
+This microservice is designed with a cloud-native, microservices architecture that leverages:
+
+* **API Gateway:** Manages external traffic and routes requests securely.
+* **AWS Cognito:** Provides robust user authentication and authorization.
+* **Amazon S3:** Ensures scalable, encrypted storage for binary data.
+* **DynamoDB:** Optimized for low-latency metadata retrieval.
+* **Amazon ECS:** Facilitates container orchestration for high availability.
+
+## Technical Details
+
+* **API Versioning:**
+
+  * Current version: **v1.0** (`/v1/` prefix)
+  * RESTful design principles with standardized JSON responses
+
+* **Authentication:**
+
+  * User authentication and authorization via **AWS Cognito**
+  * Secure, stateless JWT tokens for session validation
+  * Granular role-based access to ensure data privacy
+
+* **Data Storage:**
+
+  * Metadata handled by **DynamoDB** for rapid access
+  * Binary data securely housed in **Amazon S3** with content validation
+
+* **CI/CD Pipeline:**
+
+  * **Continuous Integration:** Automated tests, lint checks, Docker builds, and image pushes to **DockerHub**
+  * **Continuous Deployment:** Version-based Docker images are deployed to **Amazon ECR**, and ECS task definitions are updated automatically
+
+## API Endpoints
+
+### Health Check
+
+```http
+GET /v1/
 ```
 
-### Install Dependencies
+Returns service status and metadata.
 
-Run the following command to install all required dependencies:
+### Fragments
+
+```http
+POST /v1/fragments    # Create a new fragment
+GET /v1/fragments     # List all user fragments
+GET /v1/fragments/:id # Retrieve fragment data
+GET /v1/fragments/:id/info  # Retrieve fragment metadata
+PUT /v1/fragments/:id # Update existing fragment
+DELETE /v1/fragments/:id  # Delete a fragment
+```
+
+## Format Support
+
+| Type      | Extensions                               | Description                    |
+| --------- | ---------------------------------------- | ------------------------------ |
+| **Text**  | `.txt`, `.md`, `.html`, `.csv`           | Plain text and structured text |
+| **JSON**  | `.json`, `.yaml`, `.yml`                 | Data exchange formats          |
+| **Image** | `.png`, `.jpg`, `.webp`, `.avif`, `.gif` | Various image formats          |
+
+## Getting Started
+
+1. **Clone the repository:**
+
+```bash
+git clone https://github.com/your-username/industrial-iot-data-fragment-service.git
+```
+
+2. **Install dependencies:**
 
 ```bash
 npm install
 ```
 
----
-
-## Environment Variables
-
-Before running the application, ensure you configure the following environment variables using the `.env` file:
-
-- **`NODE_ENV`**: Specifies the environment mode. In development, logging is set to debug mode. In production, standard logs are used.
-  - Example: `development`, `production`
-
-- **`AWS_COGNITO_POOL_ID`**: The Amazon Cognito User Pool ID for user authentication. Required if `USE_AWS_AUTH` is set to true.
-  - Example: `us-east-1_C0rmjoZwe`
-
-- **`AWS_COGNITO_CLIENT_ID`**: The Amazon Cognito Client ID for the application. Required if `USE_AWS_AUTH` is set to true.
-  - Example: `7lksepmgjsq3aspmf7uqa3hucu`
-
-- **`HTPASSWD_FILE`**: The path to the file containing acceptable usernames and passwords for the application. Required if `USE_AWS_AUTH` is set to false.
-  - Example: `tests/.htpasswd`
-
-- **`PORT`**: Specifies the port on which the microservice runs.
-  - Example: `8080`
-
----
-
-## Running the API Locally
-
-Follow the steps below to run the API on your local environment.
-
-### Checking for Errors
-
-To check for errors in the code using ESLint, run the following command:
+3. **Configure environment variables:**
 
 ```bash
-npm run lint
+cp .env.example .env
+# Update .env with AWS credentials and Cognito settings
 ```
 
-### Debug Mode
-
-To run the code in debug mode or to integrate with the VSCode debugger, use the following command:
-
-```bash
-npm debug
-```
-
-### Running the Development Server
-
-To run the Express server in Development mode with hot-reloading (nodemon), use the following command:
+4. **Start the service:**
 
 ```bash
 npm run dev
 ```
 
-This starts the server using `nodemon`, which automatically restarts the server when changes are detected in the source code.
+## Development
 
-### Starting the Server
-
-To start the server for production-like environments, use:
+* **Run tests:**
 
 ```bash
-npm start
+npm test
 ```
 
----
-
-## API Documentation
-
-The **Fragments Microservice** exposes the following API endpoints:
-
-### 1. Health Check
-
-Check the health of the service by accessing the root route (`/`). This route does not require authentication.
-
-#### Example Response:
-
-```json
-{
-  "status": "ok",
-  "author": "David Humphrey <david.humphrey@senecapolytechnic.ca>",
-  "githubUrl": "https://github.com/humphd/fragments",
-  "version": "0.5.3"
-}
-```
-
-#### Example Usage (using curl):
+* **Run with coverage:**
 
 ```bash
-curl -i https://fragments-api.com/
+npm run coverage
 ```
 
-### 2. Fragments
-
-Fragments represent pieces of data (text or images). Each fragment has two parts: metadata and data (binary content).
-
-#### Fragment Metadata:
-
-- **id**: Unique identifier (UUID) for the fragment.
-- **ownerId**: Hashed email address of the fragment owner.
-- **created**: Timestamp of when the fragment was created (ISO 8601 format).
-- **updated**: Timestamp of when the fragment was last updated.
-- **type**: The MIME type of the fragment (e.g., `text/plain`, `image/png`).
-- **size**: Size of the fragment data in bytes.
-
-#### 3. POST /fragments
-
-Creates a new fragment by posting raw binary data (text or image). The request body should contain the fragment data, and the `Content-Type` header should be set accordingly.
-
-##### Example Request:
+* **Run integration tests:**
 
 ```bash
-curl -i \
-  -X POST \
-  -u user1@email.com:password1 \
-  -H "Content-Type: text/plain" \
-  -d "This is a fragment" \
-  https://fragments-api.com/v1/fragments
+npm run integration
 ```
 
-##### Example Response:
+## CI/CD Pipeline
 
-```json
-{
-  "status": "ok",
-  "fragment": {
-    "id": "30a84843-0cd4-4975-95ba-b96112aea189",
-    "ownerId": "11d4c22e42c8f61feaba154683dea407b101cfd90987dda9e342843263ca420a",
-    "created": "2021-11-02T15:09:50.403Z",
-    "updated": "2021-11-02T15:09:50.403Z",
-    "type": "text/plain",
-    "size": 256
-  }
-}
-```
+The CI/CD pipeline is orchestrated with **GitHub Actions**:
 
----
-[Ashwin BN](https://github.com/Ashwin-BN/)
+* **Continuous Integration (CI):**
+
+  * Triggered on code commits to GitHub
+  * Executes unit tests, integration tests, and linter checks
+  * Builds Docker containers and publishes to **DockerHub**
+
+* **Continuous Deployment (CD):**
+
+  * Activated by version tags
+  * Deploys Docker images to **Amazon ECR**
+  * ECS task definitions are updated and deployed in real-time
+
+## Security Considerations
+
+* Endpoints are protected via **JWT-based authentication**
+* **AWS Cognito** enforces user isolation and role-based access
+* Rate limiting and API monitoring are implemented for enhanced security
+
+## Acknowledgments
+
+This project is part of the **CCP555 Program**, built with best practices in cloud-native development and microservices architecture.
